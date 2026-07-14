@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Bookings – TicketEase</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.navbar{background:linear-gradient(135deg,#0d47a1,#1565c0);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:100}
+.navbar .brand{color:#fff;font-size:20px;font-weight:800;text-decoration:none}
+.navbar .nav-links{display:flex;align-items:center;gap:5px}
+.navbar .nav-links a{color:rgba(255,255,255,.88);text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;transition:background .2s}
+.navbar .nav-links a:hover,.navbar .nav-links a.active{background:rgba(255,255,255,.22);color:#fff}
+.page{max-width:1180px;margin:28px auto;padding:0 22px}
+.flash{border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
+.flash.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.flash.error{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.flash.info{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden;margin-bottom:22px}
+.card-header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-size:16px;font-weight:700}
+.card-header p{font-size:12px;opacity:.8;margin-top:3px}
+.card-header a{color:#fff;font-size:12px;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:6px;text-decoration:none}
+.card-body{padding:24px}
+.page-title{font-size:22px;font-weight:800;color:#0d47a1;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.section-title{font-size:15px;font-weight:700;color:#0d47a1;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e3f2fd}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:linear-gradient(135deg,#1565c0,#0d47a1)}
+th{padding:13px 16px;text-align:left;color:#fff;font-size:13px;font-weight:600;white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#333;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8fbff}
+.badge{display:inline-block;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-confirmed{background:#e8f5e9;color:#2e7d32}
+.badge-cancelled{background:#ffebee;color:#c62828}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-refunded{background:#e8eaf6;color:#3949ab}
+.badge-unpaid{background:#fff3e0;color:#e65100}
+.badge-bus{background:#e8f5e9;color:#2e7d32}
+.badge-train{background:#e3f2fd;color:#1565c0}
+.badge-flight{background:#fff3e0;color:#e65100}
+.btn{display:inline-block;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff}
+.btn-success{background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff}
+.btn-danger{background:#c62828;color:#fff}
+.btn-light{background:#f5f5f5;color:#333;border:1px solid #e0e0e0}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:7px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-actions{display:flex;gap:10px;margin-top:24px}
+.empty{text-align:center;padding:60px 20px;color:#aaa}
+.empty .icon{font-size:52px;display:block;margin-bottom:14px}
+.pnr-bar{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 14px rgba(0,0,0,.08);margin-bottom:22px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.pnr-bar input{flex:1;min-width:200px;padding:11px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.pnr-bar input:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.pnr-bar button{padding:11px 22px;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}
+.not-found{background:#ffebee;color:#c62828;border:1px solid #ffcdd2;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px}
+</style></head>
+<body>
+<nav class="navbar">
+  <a th:href="@{/dashboard}" class="brand">🎫 TicketEase</a>
+  <div class="nav-links">
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/schedules}">Search Trips</a>
+    <a th:href="@{/bookings/my}">My Bookings</a>
+    <a th:if="${userRole == 'ROLE_ADMIN' or userRole == 'ROLE_AGENT'}" th:href="@{/admin}">Admin Panel</a>
+    <a th:href="@{/profile}">Profile</a>
+    <a th:href="@{/logout}">Logout</a>
+  </div>
+</nav>
+<div class="page">
+  <div th:if="${success}" class="flash success">✅ <span th:text="${success}"></span></div>
+  <div class="page-title">🎟 My Bookings</div>
+
+  <div class="pnr-bar">
+    <form style="display:contents" th:action="@{/bookings/search}" method="get">
+      <input type="text" name="pnr" placeholder="Search by PNR (e.g. TKTAB12345)" th:value="${pnr}">
+      <button type="submit">🔎 Search PNR</button>
+    </form>
+  </div>
+
+  <div th:if="${pnr != null and !pnr.isEmpty()}">
+    <div th:if="${booking == null}" class="not-found">❌ No booking found for PNR: <strong th:text="${pnr}"></strong></div>
+    <div th:if="${booking != null}" class="card" style="margin-bottom:22px">
+      <div class="card-header"><h2>🔎 PNR Search Result</h2></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>PNR</th><th>Route</th><th>Passenger</th><th>Departure</th><th>Seats</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody><tr>
+          <td><strong th:text="${booking.pnr}"></strong></td>
+          <td th:text="${booking.schedule.route.source + ' → ' + booking.schedule.route.destination}"></td>
+          <td th:text="${booking.passengerName}"></td>
+          <td th:text="${#temporals.format(booking.schedule.departureTime,'dd-MM-yyyy HH:mm')}"></td>
+          <td th:text="${booking.seatsBooked + ' (' + booking.seatNumbers + ')'}"></td>
+          <td>₹<span th:text="${booking.totalAmount}"></span></td>
+          <td><span th:class="'badge badge-' + ${booking.status.name().toLowerCase()}" th:text="${booking.status.name()}"></span></td>
+          <td>
+            <a th:if="${booking.status.name() == 'CONFIRMED'}" th:href="@{/bookings/{id}/cancel(id=${booking.id})}"
+               class="btn btn-danger btn-sm" onclick="return confirm('Cancel and refund this booking?')">Cancel</a>
+            <span th:unless="${booking.status.name() == 'CONFIRMED'}" style="color:#ccc">—</span>
+          </td>
+        </tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${bookings != null and bookings.isEmpty()}" class="card">
+    <div class="empty"><span class="icon">🎟</span><p>No bookings yet. <a th:href="@{/schedules}" style="color:#1565c0;font-weight:600">Book your first ticket!</a></p></div>
+  </div>
+
+  <div class="card" th:if="${bookings != null and !bookings.isEmpty()}">
+    <div class="card-header"><h2>All My Bookings</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>PNR</th><th>Route</th><th>Passenger</th><th>Departure</th><th>Seats</th><th>Amount</th><th>Status</th><th>Payment</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr th:each="b : ${bookings}">
+            <td><strong th:text="${b.pnr}"></strong></td>
+            <td th:text="${b.schedule.route.source + ' → ' + b.schedule.route.destination}"></td>
+            <td th:text="${b.passengerName}"></td>
+            <td th:text="${#temporals.format(b.schedule.departureTime,'dd-MM-yyyy HH:mm')}"></td>
+            <td th:text="${b.seatsBooked + ' (' + b.seatNumbers + ')'}"></td>
+            <td>₹<span th:text="${b.totalAmount}"></span></td>
+            <td><span th:class="'badge badge-' + ${b.status.name().toLowerCase()}" th:text="${b.status.name()}"></span></td>
+            <td><span th:class="'badge badge-' + ${b.paymentStatus.name().toLowerCase()}" th:text="${b.paymentStatus.name()}"></span></td>
+            <td>
+              <a th:if="${b.status.name() == 'CONFIRMED'}" th:href="@{/bookings/{id}/cancel(id=${b.id})}"
+                 class="btn btn-danger btn-sm" onclick="return confirm('Cancel booking and initiate refund?')">Cancel</a>
+              <a th:if="${b.status.name() == 'PENDING'}" th:href="@{/payment/{id}(id=${b.id})}"
+                 class="btn btn-primary btn-sm">Pay Now</a>
+              <span th:if="${b.status.name() == 'CANCELLED'}" style="color:#ccc;font-size:12px">Refunded</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body></html>

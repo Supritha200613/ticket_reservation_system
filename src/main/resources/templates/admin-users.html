@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Manage Users – TicketEase</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.navbar{background:linear-gradient(135deg,#0d47a1,#1565c0);padding:0 30px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:100}
+.navbar .brand{color:#fff;font-size:20px;font-weight:800;text-decoration:none}
+.navbar .nav-links{display:flex;align-items:center;gap:6px}
+.navbar .nav-links a{color:rgba(255,255,255,.88);text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;transition:background .2s}
+.navbar .nav-links a:hover,.navbar .nav-links a.active{background:rgba(255,255,255,.22);color:#fff}
+.page{max-width:1100px;margin:28px auto;padding:0 22px}
+.flash{border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:13px;display:flex;align-items:center;gap:10px}
+.flash.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.flash.error{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.page-title{font-size:22px;font-weight:800;color:#0d47a1;margin-bottom:22px}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden}
+.card-header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:16px 22px}
+.card-header h2{font-size:15px;font-weight:700}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:linear-gradient(135deg,#1565c0,#0d47a1)}
+th{padding:13px 16px;text-align:left;color:#fff;font-size:13px;font-weight:600}
+td{padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#333;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8fbff}
+.badge{display:inline-block;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-admin{background:#fce4ec;color:#c62828}
+.badge-agent{background:#e8f5e9;color:#2e7d32}
+.badge-customer{background:#e3f2fd;color:#1565c0}
+.badge-active{background:#e8f5e9;color:#2e7d32}
+.badge-disabled{background:#ffebee;color:#c62828}
+.btn-sm{display:inline-block;padding:6px 13px;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none;border:none;cursor:pointer;margin-right:4px;transition:opacity .2s}
+.btn-sm:hover{opacity:.85}
+.btn-warning{background:#fff3e0;color:#e65100;border:1px solid #ffe0b2}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a th:href="@{/dashboard}" class="brand">🎫 TicketEase</a>
+  <div class="nav-links">
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/admin}">Admin Panel</a>
+    <a th:href="@{/admin/users}" class="active">Users</a>
+    <a th:href="@{/profile}">Profile</a>
+    <a th:href="@{/logout}">Logout</a>
+  </div>
+</nav>
+<div class="page">
+  <div th:if="${success}" class="flash success">✅ <span th:text="${success}"></span></div>
+  <div th:if="${error}" class="flash error">❌ <span th:text="${error}"></span></div>
+  <div class="page-title">👥 Manage Users</div>
+  <div class="card">
+    <div class="card-header"><h2>All Registered Users</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>ID</th><th>Full Name</th><th>Email</th><th>Phone</th>
+          <th>Role</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          <tr th:each="u : ${users}">
+            <td th:text="${u.id}"></td>
+            <td><strong th:text="${u.fullName}"></strong></td>
+            <td th:text="${u.email}"></td>
+            <td th:text="${u.phone != null ? u.phone : '—'}"></td>
+            <td>
+              <span th:class="${u.role.name() == 'ROLE_ADMIN'} ? 'badge badge-admin' :
+                               (${u.role.name() == 'ROLE_AGENT'} ? 'badge badge-agent' : 'badge badge-customer')"
+                    th:text="${u.role.name()}"></span>
+            </td>
+            <td>
+              <span th:if="${u.enabled}" class="badge badge-active">Active</span>
+              <span th:unless="${u.enabled}" class="badge badge-disabled">Disabled</span>
+            </td>
+            <td>
+              <a th:href="@{/admin/users/{id}/toggle(id=${u.id})}"
+                 th:class="${u.enabled} ? 'btn-sm btn-warning' : 'btn-sm btn-warning'"
+                 th:text="${u.enabled} ? 'Disable' : 'Enable'"
+                 th:onclick="${u.enabled} ? 'return confirm(\'Disable this user?\')' : 'return confirm(\'Enable this user?\')'">
+              </a>
+              <a th:href="@{/admin/users/{id}/delete(id=${u.id})}"
+                 class="btn-sm btn-danger"
+                 onclick="return confirm('Permanently delete this user?')">Delete</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard – TicketEase</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.navbar{background:linear-gradient(135deg,#0d47a1,#1565c0);padding:0 30px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:100}
+.navbar .brand{color:#fff;font-size:20px;font-weight:800;text-decoration:none}
+.navbar .nav-links{display:flex;align-items:center;gap:6px}
+.navbar .nav-links a{color:rgba(255,255,255,.88);text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;transition:background .2s}
+.navbar .nav-links a:hover,.navbar .nav-links a.active{background:rgba(255,255,255,.22);color:#fff}
+.user-chip{background:rgba(255,255,255,.15);border-radius:20px;padding:5px 14px;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#69f0ae;display:inline-block}
+.page{max-width:1180px;margin:28px auto;padding:0 22px}
+.flash{border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
+.flash.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.hero{background:linear-gradient(135deg,#0d47a1,#1565c0,#1976d2);color:#fff;border-radius:18px;padding:34px 38px;margin-bottom:26px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 32px rgba(13,71,161,.25)}
+.hero h1{font-size:26px;font-weight:800;margin-bottom:6px}
+.hero p{opacity:.85;font-size:14px;margin-bottom:8px}
+.hero .time{font-size:12px;opacity:.65;font-family:monospace}
+.hero-icon{font-size:72px;opacity:.85}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px;margin-bottom:26px}
+.stat{background:#fff;border-radius:14px;padding:22px 18px;box-shadow:0 2px 14px rgba(0,0,0,.07);border-top:4px solid #1565c0;transition:transform .2s,box-shadow .2s;text-decoration:none;display:block;color:inherit}
+.stat:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.stat .icon{font-size:28px;margin-bottom:10px}
+.stat .val{font-size:34px;font-weight:800;color:#1565c0;line-height:1}
+.stat .lbl{font-size:12px;color:#888;margin-top:5px;text-transform:uppercase;letter-spacing:.4px}
+.stat.green{border-top-color:#2e7d32}.stat.green .val{color:#2e7d32}
+.stat.orange{border-top-color:#e65100}.stat.orange .val{color:#e65100}
+.search-card{background:#fff;border-radius:14px;padding:26px;box-shadow:0 2px 14px rgba(0,0,0,.08);margin-bottom:26px}
+.search-card h2{font-size:15px;font-weight:700;color:#0d47a1;margin-bottom:18px}
+.search-form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.sf{flex:1;min-width:150px}
+.sf label{display:block;font-size:12px;font-weight:600;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.sf input{width:100%;padding:12px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.sf input:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.btn-search{padding:12px 26px;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.btn-search:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(13,71,161,.35)}
+.quick-routes{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.qr{padding:6px 14px;background:#e3f2fd;color:#1565c0;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #bbdefb;transition:background .2s}
+.qr:hover{background:#bbdefb}
+.section-title{font-size:15px;font-weight:700;color:#0d47a1;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e3f2fd}
+.actions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:26px}
+.ac{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);text-decoration:none;display:block;transition:transform .2s,box-shadow .2s;border-left:4px solid #1565c0;color:inherit}
+.ac:hover{transform:translateY(-4px);box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.ac .ac-icon{font-size:28px;margin-bottom:10px}
+.ac h3{font-size:14px;font-weight:700;color:#1565c0;margin-bottom:4px}
+.ac p{font-size:12px;color:#888}
+.ac.admin{border-left-color:#c62828}.ac.admin h3{color:#c62828}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a th:href="@{/dashboard}" class="brand">🎫 TicketEase</a>
+  <div class="nav-links">
+    <a th:href="@{/dashboard}" class="active">Dashboard</a>
+    <a th:href="@{/schedules}">Search Trips</a>
+    <a th:href="@{/bookings/my}">My Bookings</a>
+    <a th:if="${userRole == 'ROLE_ADMIN' or userRole == 'ROLE_AGENT'}" th:href="@{/admin}">Admin Panel</a>
+    <a th:href="@{/profile}">Profile</a>
+    <a th:href="@{/logout}">Logout</a>
+    <div class="user-chip"><span class="dot"></span><span th:text="${userName}"></span></div>
+  </div>
+</nav>
+<div class="page">
+  <div class="hero">
+    <div>
+      <h1>Welcome back, <span th:text="${userName}">User</span>! 👋</h1>
+      <p th:text="${userRole == 'ROLE_ADMIN'} ? 'System Administrator – Full Access' :
+                   (${userRole == 'ROLE_AGENT'} ? 'Ticket Agent – Manage and Book' : 'Ready to book your next journey?')"></p>
+      <div class="time" id="livetime"></div>
+    </div>
+    <div class="hero-icon">🎫</div>
+  </div>
+
+  <div class="stats-row">
+    <a th:href="@{/routes}" class="stat">
+      <div class="icon">🗺</div><div class="val" th:text="${totalRoutes}">0</div><div class="lbl">Active Routes</div>
+    </a>
+    <a th:href="@{/schedules}" class="stat green">
+      <div class="icon">🕐</div><div class="val" th:text="${totalSchedules}">0</div><div class="lbl">Active Schedules</div>
+    </a>
+    <a th:href="@{/bookings/my}" th:if="${userRole == 'ROLE_CUSTOMER'}" class="stat orange">
+      <div class="icon">🎟</div><div class="val" th:text="${myBookings}">0</div>
+      <div class="lbl">My Bookings</div>
+    </a>
+    <a th:href="@{/admin}" th:unless="${userRole == 'ROLE_CUSTOMER'}" class="stat orange">
+      <div class="icon">🎟</div><div class="val" th:text="${myBookings}">0</div>
+      <div class="lbl">Total Bookings</div>
+    </a>
+  </div>
+
+  <div class="search-card">
+    <h2>🔍 Search and Book Tickets</h2>
+    <form class="search-form" th:action="@{/schedules}" method="get">
+      <div class="sf"><label>From</label><input type="text" name="source" id="src" placeholder="e.g. Hyderabad"></div>
+      <div class="sf"><label>To</label><input type="text" name="destination" id="dst" placeholder="e.g. Vijayawada"></div>
+      <button type="submit" class="btn-search">🔍 Search Trips</button>
+    </form>
+    <div class="quick-routes">
+      <span class="qr" onclick="setRoute('Hyderabad','Vijayawada')">🚌 Hyderabad to Vijayawada</span>
+      <span class="qr" onclick="setRoute('Hyderabad','Bangalore')">🚌 Hyderabad to Bangalore</span>
+      <span class="qr" onclick="setRoute('Hyderabad','Chennai')">✈ Hyderabad to Chennai</span>
+      <span class="qr" onclick="setRoute('Delhi','Mumbai')">🚆 Delhi to Mumbai</span>
+      <span class="qr" onclick="setRoute('Mumbai','Goa')">🚌 Mumbai to Goa</span>
+    </div>
+  </div>
+
+  <div th:if="${userRole == 'ROLE_CUSTOMER'}">
+    <div class="section-title">⚡ Quick Actions</div>
+    <div class="actions-grid">
+      <a th:href="@{/schedules}" class="ac"><div class="ac-icon">🔍</div><h3>Search Tickets</h3><p>Find buses, trains and flights</p></a>
+      <a th:href="@{/bookings/my}" class="ac"><div class="ac-icon">🎟</div><h3>My Bookings</h3><p>View and manage your tickets</p></a>
+      <a th:href="@{/routes}" class="ac"><div class="ac-icon">🗺</div><h3>Browse Routes</h3><p>Explore all transport routes</p></a>
+      <a th:href="@{/bookings/search}" class="ac"><div class="ac-icon">🔎</div><h3>PNR Status</h3><p>Track a booking by PNR</p></a>
+      <a th:href="@{/profile}" class="ac"><div class="ac-icon">👤</div><h3>My Profile</h3><p>Update your account details</p></a>
+    </div>
+  </div>
+
+  <div th:if="${userRole == 'ROLE_ADMIN' or userRole == 'ROLE_AGENT'}">
+    <div class="section-title">⚡ Management Actions</div>
+    <div class="actions-grid">
+      <a th:href="@{/admin}" class="ac admin"><div class="ac-icon">📊</div><h3>Admin Panel</h3><p>Revenue stats and all bookings</p></a>
+      <a th:href="@{/admin/users}" class="ac admin"><div class="ac-icon">👥</div><h3>Manage Users</h3><p>View and control accounts</p></a>
+      <a th:href="@{/routes/add}" class="ac admin"><div class="ac-icon">➕</div><h3>Add Route</h3><p>Create a new transport route</p></a>
+      <a th:href="@{/schedules/add}" class="ac admin"><div class="ac-icon">📅</div><h3>Add Schedule</h3><p>Schedule a new departure</p></a>
+      <a th:href="@{/schedules}" class="ac"><div class="ac-icon">🔍</div><h3>Search and Book</h3><p>Book on behalf of customers</p></a>
+      <a th:href="@{/routes}" class="ac"><div class="ac-icon">🗺</div><h3>Manage Routes</h3><p>Edit or remove routes</p></a>
+      <a th:href="@{/profile}" class="ac"><div class="ac-icon">👤</div><h3>My Profile</h3><p>Update account details</p></a>
+    </div>
+  </div>
+</div>
+<script>
+function setRoute(s,d){document.getElementById('src').value=s;document.getElementById('dst').value=d}
+function tick(){var n=new Date();document.getElementById('livetime').textContent=
+  n.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+
+  ' · '+n.toLocaleTimeString('en-IN')}
+tick();setInterval(tick,1000)
+</script>
+</body></html>

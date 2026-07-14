@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Payment Successful – TicketEase</title>
+<meta http-equiv="refresh" th:content="'3;url=/bookings/confirmation/' + ${booking.id}">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;min-height:100vh;background:linear-gradient(135deg,#0d47a1,#1565c0,#1976d2);display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:20px;padding:50px 44px;max-width:460px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3)}
+.check-circle{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.check-circle span{font-size:52px}
+h1{color:#1b5e20;font-size:26px;font-weight:800;margin-bottom:8px}
+.subtitle{color:#666;font-size:14px;margin-bottom:24px}
+.amount-display{font-size:42px;font-weight:800;color:#2e7d32;margin:16px 0}
+.txn-box{background:#f8f9fa;border-radius:12px;padding:18px 20px;text-align:left;margin:20px 0}
+.txn-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid #eee}
+.txn-row:last-child{border-bottom:none}
+.txn-row .lbl{color:#888}
+.txn-row .val{font-weight:700;color:#222}
+.btn{display:inline-block;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.redirect-note{font-size:12px;color:#bbb;margin-top:18px}
+.dots{display:inline-flex;gap:6px;margin-top:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:#1565c0;animation:bounce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(1);opacity:.5}40%{transform:scale(1.4);opacity:1}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="check-circle"><span>✅</span></div>
+  <h1>Payment Successful!</h1>
+  <div class="subtitle">Your transaction has been processed successfully.</div>
+  <div class="amount-display">₹<span th:text="${booking.totalAmount}"></span></div>
+  <div class="txn-box">
+    <div class="txn-row"><span class="lbl">Transaction ID</span><span class="val" th:text="${booking.transactionId}"></span></div>
+    <div class="txn-row"><span class="lbl">Payment Method</span><span class="val" th:text="${booking.paymentMethod}"></span></div>
+    <div class="txn-row"><span class="lbl">PNR Number</span><span class="val" th:text="${booking.pnr}"></span></div>
+    <div class="txn-row"><span class="lbl">Route</span><span class="val" th:text="${booking.schedule.route.source + ' → ' + booking.schedule.route.destination}"></span></div>
+    <div class="txn-row"><span class="lbl">Booking Status</span><span class="val" style="color:#2e7d32">CONFIRMED ✓</span></div>
+  </div>
+  <a th:href="@{/bookings/confirmation/{id}(id=${booking.id})}" class="btn">View E-Ticket →</a>
+  <div class="redirect-note">Redirecting to your e-ticket in 3 seconds…</div>
+  <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+</div>
+</body></html>

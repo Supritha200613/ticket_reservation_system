@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Routes – TicketEase</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.navbar{background:linear-gradient(135deg,#0d47a1,#1565c0);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:100}
+.navbar .brand{color:#fff;font-size:20px;font-weight:800;text-decoration:none}
+.navbar .nav-links{display:flex;align-items:center;gap:5px}
+.navbar .nav-links a{color:rgba(255,255,255,.88);text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;transition:background .2s}
+.navbar .nav-links a:hover,.navbar .nav-links a.active{background:rgba(255,255,255,.22);color:#fff}
+.page{max-width:1180px;margin:28px auto;padding:0 22px}
+.flash{border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
+.flash.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.flash.error{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.flash.info{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden;margin-bottom:22px}
+.card-header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-size:16px;font-weight:700}
+.card-header p{font-size:12px;opacity:.8;margin-top:3px}
+.card-header a{color:#fff;font-size:12px;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:6px;text-decoration:none}
+.card-body{padding:24px}
+.page-title{font-size:22px;font-weight:800;color:#0d47a1;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.section-title{font-size:15px;font-weight:700;color:#0d47a1;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e3f2fd}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:linear-gradient(135deg,#1565c0,#0d47a1)}
+th{padding:13px 16px;text-align:left;color:#fff;font-size:13px;font-weight:600;white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#333;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8fbff}
+.badge{display:inline-block;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-confirmed{background:#e8f5e9;color:#2e7d32}
+.badge-cancelled{background:#ffebee;color:#c62828}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-refunded{background:#e8eaf6;color:#3949ab}
+.badge-unpaid{background:#fff3e0;color:#e65100}
+.badge-bus{background:#e8f5e9;color:#2e7d32}
+.badge-train{background:#e3f2fd;color:#1565c0}
+.badge-flight{background:#fff3e0;color:#e65100}
+.btn{display:inline-block;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff}
+.btn-success{background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff}
+.btn-danger{background:#c62828;color:#fff}
+.btn-light{background:#f5f5f5;color:#333;border:1px solid #e0e0e0}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:7px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-actions{display:flex;gap:10px;margin-top:24px}
+.empty{text-align:center;padding:60px 20px;color:#aaa}
+.empty .icon{font-size:52px;display:block;margin-bottom:14px}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 14px rgba(0,0,0,.08);margin-bottom:22px}
+.tf{flex:1;min-width:140px}
+.tf label{display:block;font-size:12px;font-weight:600;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.tf input{width:100%;padding:11px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.tf input:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.btn-search{padding:11px 20px;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;height:44px}
+.routes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.route-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:transform .2s,box-shadow .2s}
+.route-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.rc-head{padding:18px 20px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.rc-head.bus{background:linear-gradient(135deg,#2e7d32,#1b5e20)}
+.rc-head.train{background:linear-gradient(135deg,#1565c0,#0d47a1)}
+.rc-head.flight{background:linear-gradient(135deg,#e65100,#bf360c)}
+.rc-head h3{font-size:16px;font-weight:700}
+.rc-head .type-icon{font-size:24px;opacity:.85}
+.rc-body{padding:18px 20px}
+.rc-body p{font-size:13px;color:#555;margin-bottom:8px;display:flex;justify-content:space-between}
+.rc-body p span{font-weight:600;color:#222}
+.rc-actions{display:flex;gap:8px;margin-top:14px}
+.rc-actions a{flex:1;text-align:center;padding:9px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;transition:opacity .2s}
+.rc-actions a:hover{opacity:.85}
+.btn-view{background:#e3f2fd;color:#1565c0}
+.btn-edit{background:#fff3e0;color:#e65100}
+.btn-del{background:#ffebee;color:#c62828}
+.empty{text-align:center;padding:60px;color:#aaa}
+</style></head>
+<body>
+<nav class="navbar">
+  <a th:href="@{/dashboard}" class="brand">🎫 TicketEase</a>
+  <div class="nav-links">
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/schedules}">Search Trips</a>
+    <a th:href="@{/bookings/my}">My Bookings</a>
+    <a th:if="${userRole == 'ROLE_ADMIN' or userRole == 'ROLE_AGENT'}" th:href="@{/admin}">Admin Panel</a>
+    <a th:href="@{/profile}">Profile</a>
+    <a th:href="@{/logout}">Logout</a>
+  </div>
+</nav>
+<div class="page">
+  <div class="page-title">🗺 Routes
+    <a th:if="${canManage}" th:href="@{/routes/add}" class="btn btn-primary btn-sm" style="margin-left:auto;font-size:13px">+ Add Route</a>
+  </div>
+  <div class="toolbar">
+    <form style="display:contents" th:action="@{/routes}" method="get">
+      <div class="tf"><label>From</label><input type="text" name="source" placeholder="Source city" th:value="${source}"></div>
+      <div class="tf"><label>To</label><input type="text" name="destination" placeholder="Destination city" th:value="${destination}"></div>
+      <button type="submit" class="btn-search">🔍 Search</button>
+    </form>
+  </div>
+  <div th:if="${routes.isEmpty()}" class="empty"><span style="font-size:48px">🗺</span><p style="margin-top:14px">No routes found.</p></div>
+  <div class="routes-grid" th:if="${!routes.isEmpty()}">
+    <div class="route-card" th:each="r : ${routes}">
+      <div th:class="'rc-head ' + ${r.transportType.name().toLowerCase()}">
+        <h3>📍 <span th:text="${r.source}"></span> → <span th:text="${r.destination}"></span></h3>
+        <span class="type-icon" th:text="${r.transportType.name() == 'BUS'} ? '🚌' : (${r.transportType.name() == 'TRAIN'} ? '🚆' : '✈')"></span>
+      </div>
+      <div class="rc-body">
+        <p>Base Fare <span>₹<span th:text="${r.baseFare}"></span></span></p>
+        <p>Distance <span><span th:text="${r.distanceKm}"></span> km</span></p>
+        <p>Transport <span th:text="${r.transportType.name()}"></span></p>
+        <div class="rc-actions">
+          <a th:href="@{/schedules(source=${r.source},destination=${r.destination})}" class="rc-actions btn-view">Search Trips</a>
+          <a th:if="${canManage}" th:href="@{/routes/{id}/edit(id=${r.id})}" class="rc-actions btn-edit">Edit</a>
+          <a th:if="${canManage}" th:href="@{/routes/{id}/delete(id=${r.id})}" class="rc-actions btn-del" onclick="return confirm('Delete this route?')">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

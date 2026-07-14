@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Secure Checkout – TicketEase</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.navbar{background:linear-gradient(135deg,#0d47a1,#1565c0);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:100}
+.navbar .brand{color:#fff;font-size:20px;font-weight:800;text-decoration:none}
+.navbar .nav-links{display:flex;align-items:center;gap:6px}
+.navbar .nav-links a{color:rgba(255,255,255,.88);text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;transition:background .2s}
+.navbar .nav-links a:hover{background:rgba(255,255,255,.22);color:#fff}
+.page{max-width:1000px;margin:28px auto;padding:0 22px}
+.flash{border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:13px;display:flex;align-items:center;gap:10px}
+.flash.error{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.progress-bar{display:flex;justify-content:center;gap:0;margin-bottom:28px}
+.step{display:flex;align-items:center}
+.step-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.step-dot.done{background:#2e7d32;color:#fff}
+.step-dot.active{background:#1565c0;color:#fff}
+.step-dot.todo{background:#e0e0e0;color:#888}
+.step-label{font-size:12px;color:#888;margin:0 10px;white-space:nowrap}
+.step-line{width:50px;height:2px;background:#e0e0e0}
+.step-line.done{background:#2e7d32}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:22px;align-items:start}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.demo-badge{background:#fff8e1;border:1px solid #ffd54f;color:#8d6e00;border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:13px;display:flex;align-items:center;gap:10px}
+.pay-card{background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden}
+.pay-card-header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:18px 24px}
+.pay-card-header h2{font-size:16px;font-weight:700}
+.pay-card-body{padding:24px}
+.method-tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+.method-tab{flex:1;min-width:80px;padding:12px 8px;text-align:center;border:2px solid #e8eaf6;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:#666;transition:all .2s}
+.method-tab.active{border-color:#1565c0;background:#e3f2fd;color:#1565c0}
+.method-tab .micon{font-size:22px;display:block;margin-bottom:4px}
+.method-form{display:none}
+.method-form.active{display:block}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:7px}
+.form-group input,.form-group select{width:100%;padding:11px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.form-group input:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.upi-apps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.upi-app{flex:1;min-width:70px;text-align:center;padding:10px 6px;border:2px solid #e8eaf6;border-radius:10px;font-size:11px;cursor:pointer;transition:border-color .2s;font-weight:600}
+.upi-app:hover{border-color:#1565c0;background:#e3f2fd}
+.upi-app .uicon{font-size:22px;display:block;margin-bottom:3px}
+.btn-pay{width:100%;padding:15px;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-pay:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(30,125,50,.35)}
+.secure-note{text-align:center;font-size:11px;color:#aaa;margin-top:12px}
+.summary-card{background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden}
+.summary-head{background:linear-gradient(135deg,#0d47a1,#1565c0);color:#fff;padding:18px 20px}
+.summary-head h3{font-size:15px;font-weight:700}
+.summary-body{padding:20px}
+.route-line{font-size:18px;font-weight:800;color:#0d47a1;margin-bottom:4px}
+.op-line{font-size:12px;color:#aaa;margin-bottom:18px}
+.sum-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+.sum-row:last-of-type{border-bottom:none}
+.sum-row .lbl{color:#888}
+.sum-row .val{font-weight:600;color:#222}
+.total-box{background:#e8f5e9;border-radius:10px;padding:14px 16px;margin-top:14px;display:flex;justify-content:space-between;align-items:center}
+.total-box .tlbl{font-weight:700;color:#1b5e20;font-size:14px}
+.total-box .tval{font-size:24px;font-weight:800;color:#1b5e20}
+.cancel-link{display:block;text-align:center;margin-top:14px;font-size:13px;color:#c62828;text-decoration:none;font-weight:600}
+.cancel-link:hover{text-decoration:underline}
+.hold-note{background:#fff3e0;color:#e65100;border-radius:10px;padding:10px 14px;font-size:12px;text-align:center;margin-top:14px;font-weight:600}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a th:href="@{/dashboard}" class="brand">🎫 TicketEase</a>
+  <div class="nav-links">
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/bookings/my}">My Bookings</a>
+    <a th:href="@{/logout}">Logout</a>
+  </div>
+</nav>
+<div class="page">
+  <!-- Progress -->
+  <div class="progress-bar">
+    <div class="step"><div class="step-dot done">1</div><span class="step-label">Select Trip</span></div>
+    <div class="step-line done"></div>
+    <div class="step"><div class="step-dot done">2</div><span class="step-label">Passenger Details</span></div>
+    <div class="step-line done"></div>
+    <div class="step"><div class="step-dot active">3</div><span class="step-label">Payment</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-dot todo">4</div><span class="step-label">Confirmation</span></div>
+  </div>
+
+  <div class="demo-badge">⚠️ <strong>Demo Payment Gateway</strong> — Simulated checkout. No real money is charged.</div>
+  <div th:if="${error}" class="flash error">❌ <span th:text="${error}"></span></div>
+
+  <div class="grid">
+    <!-- Payment panel -->
+    <div class="pay-card">
+      <div class="pay-card-header"><h2>💳 Choose Payment Method</h2></div>
+      <div class="pay-card-body">
+        <div class="method-tabs">
+          <div class="method-tab active" onclick="selectMethod('UPI')" id="tab-UPI"><span class="micon">📱</span>UPI</div>
+          <div class="method-tab" onclick="selectMethod('CARD')" id="tab-CARD"><span class="micon">💳</span>Card</div>
+          <div class="method-tab" onclick="selectMethod('NETBANKING')" id="tab-NETBANKING"><span class="micon">🏦</span>Net Banking</div>
+          <div class="method-tab" onclick="selectMethod('WALLET')" id="tab-WALLET"><span class="micon">👛</span>Wallet</div>
+        </div>
+
+        <form method="post" th:action="@{/payment/{id}/process(id=${booking.id})}">
+          <input type="hidden" name="paymentMethod" id="paymentMethodField" value="UPI">
+
+          <!-- UPI -->
+          <div class="method-form active" id="form-UPI">
+            <div class="upi-apps">
+              <div class="upi-app"><span class="uicon">🟢</span>GPay</div>
+              <div class="upi-app"><span class="uicon">🟣</span>PhonePe</div>
+              <div class="upi-app"><span class="uicon">🔵</span>Paytm</div>
+              <div class="upi-app"><span class="uicon">🔴</span>BHIM</div>
+            </div>
+            <div class="form-group"><label>UPI ID</label><input type="text" name="upiId" placeholder="yourname@upi"></div>
+          </div>
+
+          <!-- Card -->
+          <div class="method-form" id="form-CARD">
+            <div class="form-group"><label>Card Number</label><input type="text" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"></div>
+            <div class="form-row">
+              <div class="form-group"><label>Expiry (MM/YY)</label><input type="text" placeholder="MM/YY" maxlength="5"></div>
+              <div class="form-group"><label>CVV</label><input type="text" placeholder="•••" maxlength="3"></div>
+            </div>
+            <div class="form-group"><label>Name on Card</label><input type="text" placeholder="Cardholder name"></div>
+          </div>
+
+          <!-- Net Banking -->
+          <div class="method-form" id="form-NETBANKING">
+            <div class="form-group"><label>Select Your Bank</label>
+              <select><option>State Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Axis Bank</option><option>Punjab National Bank</option></select>
+            </div>
+          </div>
+
+          <!-- Wallet -->
+          <div class="method-form" id="form-WALLET">
+            <div class="form-group"><label>Select Wallet</label>
+              <select><option>Paytm Wallet</option><option>Amazon Pay</option><option>Mobikwik</option></select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-pay">
+            🔒 Pay ₹<span th:text="${booking.totalAmount}"></span> Securely
+          </button>
+          <div class="secure-note">🔐 256-bit SSL encrypted · 100% secure demo payment</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Summary panel -->
+    <div class="summary-card">
+      <div class="summary-head"><h3>📋 Order Summary</h3></div>
+      <div class="summary-body">
+        <div class="route-line"><span th:text="${booking.schedule.route.source}"></span> → <span th:text="${booking.schedule.route.destination}"></span></div>
+        <div class="op-line" th:text="${booking.schedule.operatorName + ' | ' + booking.schedule.vehicleNumber}"></div>
+        <div class="sum-row"><span class="lbl">PNR</span><span class="val" th:text="${booking.pnr}"></span></div>
+        <div class="sum-row"><span class="lbl">Passenger</span><span class="val" th:text="${booking.passengerName}"></span></div>
+        <div class="sum-row"><span class="lbl">Departure</span><span class="val" th:text="${#temporals.format(booking.schedule.departureTime,'dd-MM-yyyy HH:mm')}"></span></div>
+        <div class="sum-row"><span class="lbl">Seats</span><span class="val" th:text="${booking.seatsBooked + ' (' + booking.seatNumbers + ')'}"></span></div>
+        <div class="sum-row"><span class="lbl">Fare/seat</span><span class="val">₹<span th:text="${booking.schedule.route.baseFare}"></span></span></div>
+        <div class="total-box">
+          <span class="tlbl">Total Amount</span>
+          <span class="tval">₹<span th:text="${booking.totalAmount}"></span></span>
+        </div>
+        <div class="hold-note">⏱ Your seats are held. Complete payment to confirm.</div>
+        <a th:href="@{/payment/{id}/cancel(id=${booking.id})}" class="cancel-link"
+           onclick="return confirm('Cancel payment? Your held seats will be released.')">✕ Cancel &amp; Release Seats</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function selectMethod(m){
+  document.querySelectorAll('.method-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.method-form').forEach(function(f){f.classList.remove('active')});
+  document.getElementById('tab-'+m).classList.add('active');
+  document.getElementById('form-'+m).classList.add('active');
+  document.getElementById('paymentMethodField').value=m;
+}
+</script>
+</body></html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Search Trips – TicketEase</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.navbar{background:linear-gradient(135deg,#0d47a1,#1565c0);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:100}
+.navbar .brand{color:#fff;font-size:20px;font-weight:800;text-decoration:none}
+.navbar .nav-links{display:flex;align-items:center;gap:5px}
+.navbar .nav-links a{color:rgba(255,255,255,.88);text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;transition:background .2s}
+.navbar .nav-links a:hover,.navbar .nav-links a.active{background:rgba(255,255,255,.22);color:#fff}
+.page{max-width:1180px;margin:28px auto;padding:0 22px}
+.flash{border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
+.flash.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.flash.error{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.flash.info{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden;margin-bottom:22px}
+.card-header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-size:16px;font-weight:700}
+.card-header p{font-size:12px;opacity:.8;margin-top:3px}
+.card-header a{color:#fff;font-size:12px;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:6px;text-decoration:none}
+.card-body{padding:24px}
+.page-title{font-size:22px;font-weight:800;color:#0d47a1;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.section-title{font-size:15px;font-weight:700;color:#0d47a1;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e3f2fd}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:linear-gradient(135deg,#1565c0,#0d47a1)}
+th{padding:13px 16px;text-align:left;color:#fff;font-size:13px;font-weight:600;white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#333;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8fbff}
+.badge{display:inline-block;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-confirmed{background:#e8f5e9;color:#2e7d32}
+.badge-cancelled{background:#ffebee;color:#c62828}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-refunded{background:#e8eaf6;color:#3949ab}
+.badge-unpaid{background:#fff3e0;color:#e65100}
+.badge-bus{background:#e8f5e9;color:#2e7d32}
+.badge-train{background:#e3f2fd;color:#1565c0}
+.badge-flight{background:#fff3e0;color:#e65100}
+.btn{display:inline-block;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff}
+.btn-success{background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff}
+.btn-danger{background:#c62828;color:#fff}
+.btn-light{background:#f5f5f5;color:#333;border:1px solid #e0e0e0}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:7px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-actions{display:flex;gap:10px;margin-top:24px}
+.empty{text-align:center;padding:60px 20px;color:#aaa}
+.empty .icon{font-size:52px;display:block;margin-bottom:14px}
+.search-bar{background:#fff;border-radius:14px;padding:22px 24px;box-shadow:0 2px 14px rgba(0,0,0,.08);margin-bottom:22px}
+.search-form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.sf{flex:1;min-width:140px}
+.sf label{display:block;font-size:12px;font-weight:600;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.sf input{width:100%;padding:11px 14px;border:2px solid #e8eaf6;border-radius:10px;font-size:14px;transition:border .2s}
+.sf input:focus{outline:none;border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.btn-search{padding:11px 22px;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;height:44px;transition:transform .2s}
+.btn-search:hover{transform:translateY(-2px)}
+.result-info{font-size:13px;color:#888;margin-bottom:14px;font-weight:500}
+.bus-card{background:#fff;border-radius:14px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);display:grid;grid-template-columns:1fr auto;overflow:hidden;transition:box-shadow .2s,transform .2s}
+.bus-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.14);transform:translateY(-2px)}
+.bus-main{padding:20px 24px}
+.op-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.op-logo{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
+.op-logo.rb{background:linear-gradient(135deg,#d32f2f,#b71c1c)}
+.op-logo.ab{background:linear-gradient(135deg,#f57c00,#e65100)}
+.op-logo.ir{background:linear-gradient(135deg,#00695c,#004d40)}
+.op-logo.fl{background:linear-gradient(135deg,#1a237e,#0d47a1)}
+.op-logo.df{background:linear-gradient(135deg,#1565c0,#0d47a1)}
+.op-info .name{font-size:15px;font-weight:700;color:#222}
+.op-info .via{font-size:11px;color:#999;margin-top:2px}
+.type-chip{margin-left:auto;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.journey{display:flex;align-items:center;gap:16px;margin:14px 0}
+.time-block{text-align:center}
+.time-block .time{font-size:22px;font-weight:800;color:#222}
+.time-block .city{font-size:12px;color:#888;margin-top:2px}
+.jline{flex:1;position:relative;height:2px;background:#e0e0e0;margin:0 8px}
+.jline::before,.jline::after{content:'';position:absolute;top:-4px;width:10px;height:10px;border-radius:50%;background:#1565c0}
+.jline::before{left:-3px}.jline::after{right:-3px}
+.jline .dist{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:#999;white-space:nowrap}
+.vehicle-row{font-size:12px;color:#aaa;margin-top:8px}
+.bus-side{background:#fafbff;padding:20px 24px;border-left:1px dashed #e0e0e0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-width:190px}
+.fare{font-size:24px;font-weight:800;color:#1565c0}
+.fare-note{font-size:11px;color:#aaa;margin-top:-6px}
+.seats-badge{display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700}
+.seats-badge .sdot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.seats-high{background:#e8f5e9;color:#2e7d32}
+.seats-med{background:#fff3e0;color:#e65100}
+.seats-low{background:#ffebee;color:#c62828}
+.btn-book{width:100%;padding:11px 16px;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;text-align:center;transition:transform .2s,box-shadow .2s;display:block}
+.btn-book:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(13,71,161,.35)}
+.btn-book.sold{background:#e0e0e0;color:#999;pointer-events:none}
+.btn-delete{width:100%;padding:7px;background:#ffebee;color:#c62828;text-decoration:none;border-radius:8px;font-size:12px;text-align:center;font-weight:600;border:1px solid #ffcdd2;margin-top:4px;display:block}
+.no-result{text-align:center;padding:60px 20px;background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);color:#aaa}
+.no-result .icon{font-size:52px;display:block;margin-bottom:14px}
+.no-result p{font-size:15px;color:#555;margin-bottom:8px}
+.no-result .hint{font-size:13px;color:#aaa}
+</style></head>
+<body>
+<nav class="navbar">
+  <a th:href="@{/dashboard}" class="brand">🎫 TicketEase</a>
+  <div class="nav-links">
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/schedules}">Search Trips</a>
+    <a th:href="@{/bookings/my}">My Bookings</a>
+    <a th:if="${userRole == 'ROLE_ADMIN' or userRole == 'ROLE_AGENT'}" th:href="@{/admin}">Admin Panel</a>
+    <a th:href="@{/profile}">Profile</a>
+    <a th:href="@{/logout}">Logout</a>
+  </div>
+</nav>
+<div class="page">
+  <div class="search-bar">
+    <form class="search-form" th:action="@{/schedules}" method="get">
+      <div class="sf"><label>From</label><input type="text" name="source" placeholder="e.g. Hyderabad" th:value="${source}"></div>
+      <div class="sf"><label>To</label><input type="text" name="destination" placeholder="e.g. Vijayawada" th:value="${destination}"></div>
+      <button type="submit" class="btn-search">🔍 Search</button>
+    </form>
+  </div>
+
+  <div th:if="${!schedules.isEmpty()}">
+    <div class="result-info" th:text="${schedules.size()} + ' trip(s) found'"></div>
+
+    <div class="bus-card" th:each="sch : ${schedules}">
+      <div class="bus-main">
+        <div class="op-row">
+          <div th:class="${sch.operatorName.toLowerCase().contains('red') or sch.operatorName.toLowerCase().contains('apsrtc')} ? 'op-logo rb' :
+                          (${sch.operatorName.toLowerCase().contains('orange') or sch.operatorName.toLowerCase().contains('abhi') or sch.operatorName.toLowerCase().contains('vrl')} ? 'op-logo ab' :
+                          (${sch.route.transportType.name() == 'TRAIN'} ? 'op-logo ir' :
+                          (${sch.route.transportType.name() == 'FLIGHT'} ? 'op-logo fl' : 'op-logo df')))"
+               th:text="${sch.route.transportType.name() == 'TRAIN'} ? '🚆' :
+                         (${sch.route.transportType.name() == 'FLIGHT'} ? '✈' :
+                         ${#strings.substring(sch.operatorName,0,2).toUpperCase()})"></div>
+          <div class="op-info">
+            <div class="name" th:text="${sch.operatorName}"></div>
+            <div class="via" th:text="${sch.operatorName.toLowerCase().contains('red') or sch.operatorName.toLowerCase().contains('apsrtc')} ? 'via RedBus Network' :
+                                       (${sch.operatorName.toLowerCase().contains('orange') or sch.operatorName.toLowerCase().contains('abhi') or sch.operatorName.toLowerCase().contains('vrl')} ? 'via AbhiBus Network' : 'via TicketEase Direct')"></div>
+          </div>
+          <span th:class="'type-chip badge-' + ${sch.route.transportType.name().toLowerCase()}"
+                th:text="${sch.route.transportType.name()}"></span>
+        </div>
+        <div class="journey">
+          <div class="time-block">
+            <div class="time" th:text="${#temporals.format(sch.departureTime,'HH:mm')}"></div>
+            <div class="city" th:text="${sch.route.source}"></div>
+          </div>
+          <div class="jline"><span class="dist" th:text="${sch.route.distanceKm} + ' km'"></span></div>
+          <div class="time-block">
+            <div class="time" th:text="${#temporals.format(sch.arrivalTime,'HH:mm')}"></div>
+            <div class="city" th:text="${sch.route.destination}"></div>
+          </div>
+        </div>
+        <div class="vehicle-row">
+          📅 <span th:text="${#temporals.format(sch.departureTime,'dd MMM yyyy')}"></span>
+          &nbsp;|&nbsp; Vehicle: <span th:text="${sch.vehicleNumber}"></span>
+          &nbsp;|&nbsp; Total seats: <span th:text="${sch.totalSeats}"></span>
+        </div>
+      </div>
+      <div class="bus-side">
+        <div class="fare">₹<span th:text="${sch.route.baseFare}"></span></div>
+        <div class="fare-note">per seat</div>
+        <span th:if="${sch.availableSeats > 10}" class="seats-badge seats-high">
+          <span class="sdot"></span><span th:text="${sch.availableSeats} + ' seats'"></span>
+        </span>
+        <span th:if="${sch.availableSeats > 0 and sch.availableSeats <= 10}" class="seats-badge seats-med">
+          <span class="sdot"></span><span th:text="${sch.availableSeats} + ' seats left!'"></span>
+        </span>
+        <span th:if="${sch.availableSeats == 0}" class="seats-badge seats-low">
+          <span class="sdot"></span>Sold Out
+        </span>
+        <a th:if="${sch.availableSeats > 0}" th:href="@{/bookings/book/{id}(id=${sch.id})}" class="btn-book">View Seats →</a>
+        <span th:if="${sch.availableSeats == 0}" class="btn-book sold">Sold Out</span>
+        <a th:if="${canManage}" th:href="@{/schedules/{id}/delete(id=${sch.id})}"
+           class="btn-delete" onclick="return confirm('Delete this schedule?')">🗑 Delete</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${schedules.isEmpty()}" class="no-result">
+    <span class="icon">🔍</span>
+    <p th:if="${source != null}">No trips found from <strong th:text="${source}"></strong> to <strong th:text="${destination}"></strong></p>
+    <p th:if="${source == null}">No schedules available right now.</p>
+    <div class="hint">Try: Hyderabad → Vijayawada, Hyderabad → Bangalore, Delhi → Mumbai</div>
+  </div>
+</div>
+</body></html>

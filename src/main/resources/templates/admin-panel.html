@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin Panel – TicketEase</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.navbar{background:linear-gradient(135deg,#0d47a1,#1565c0);padding:0 30px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:100}
+.navbar .brand{color:#fff;font-size:20px;font-weight:800;text-decoration:none}
+.navbar .nav-links{display:flex;align-items:center;gap:6px}
+.navbar .nav-links a{color:rgba(255,255,255,.88);text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500;transition:background .2s}
+.navbar .nav-links a:hover,.navbar .nav-links a.active{background:rgba(255,255,255,.22);color:#fff}
+.page{max-width:1200px;margin:28px auto;padding:0 22px}
+.flash{border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:13px;display:flex;align-items:center;gap:10px}
+.flash.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.flash.error{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.page-title{font-size:22px;font-weight:800;color:#0d47a1;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:26px}
+.stat{background:#fff;border-radius:14px;padding:20px 18px;box-shadow:0 2px 14px rgba(0,0,0,.07);border-left:4px solid #1565c0}
+.stat .icon{font-size:26px;margin-bottom:8px}
+.stat .val{font-size:30px;font-weight:800;color:#1565c0;line-height:1}
+.stat .lbl{font-size:12px;color:#888;margin-top:5px;text-transform:uppercase;letter-spacing:.4px}
+.stat.green{border-left-color:#2e7d32}.stat.green .val{color:#2e7d32}
+.stat.orange{border-left-color:#e65100}.stat.orange .val{color:#e65100}
+.stat.red{border-left-color:#c62828}.stat.red .val{color:#c62828}
+.stat.purple{border-left-color:#7b1fa2}.stat.purple .val{color:#7b1fa2}
+.revenue-card{background:linear-gradient(135deg,#1b5e20,#2e7d32);border-radius:14px;padding:24px;color:#fff;margin-bottom:26px;display:flex;align-items:center;justify-content:space-between}
+.revenue-card .amount{font-size:40px;font-weight:800}
+.revenue-card .label{font-size:14px;opacity:.85;margin-bottom:6px}
+.revenue-card .icon{font-size:60px;opacity:.7}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden;margin-bottom:22px}
+.card-header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-size:15px;font-weight:700}
+.card-header a{color:#fff;font-size:12px;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:6px;text-decoration:none}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead{background:linear-gradient(135deg,#1565c0,#0d47a1)}
+th{padding:12px 14px;text-align:left;color:#fff;font-size:12px;font-weight:600;white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#333;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8fbff}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-confirmed{background:#e8f5e9;color:#2e7d32}
+.badge-cancelled{background:#ffebee;color:#c62828}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-refunded{background:#e8eaf6;color:#3949ab}
+.btn-sm{display:inline-block;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;border:none;cursor:pointer}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.btn-danger:hover{background:#ffcdd2}
+.quick-links{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.quick-links a{padding:10px 18px;background:#fff;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;color:#1565c0;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;gap:6px;transition:transform .2s}
+.quick-links a:hover{transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a th:href="@{/dashboard}" class="brand">🎫 TicketEase</a>
+  <div class="nav-links">
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/admin}" class="active">Admin Panel</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/routes}">Routes</a>
+    <a th:href="@{/schedules}">Schedules</a>
+    <a th:href="@{/profile}">Profile</a>
+    <a th:href="@{/logout}">Logout</a>
+  </div>
+</nav>
+<div class="page">
+  <div th:if="${success}" class="flash success">✅ <span th:text="${success}"></span></div>
+  <div th:if="${error}" class="flash error">❌ <span th:text="${error}"></span></div>
+
+  <div class="page-title">📊 Admin Panel</div>
+
+  <!-- Quick links -->
+  <div class="quick-links">
+    <a th:href="@{/routes/add}">➕ Add Route</a>
+    <a th:href="@{/schedules/add}">📅 Add Schedule</a>
+    <a th:href="@{/admin/users}">👥 Manage Users</a>
+    <a th:href="@{/routes}">🗺 All Routes</a>
+    <a th:href="@{/schedules}">🕐 All Schedules</a>
+  </div>
+
+  <!-- Revenue banner -->
+  <div class="revenue-card">
+    <div>
+      <div class="label">💰 Total Revenue (Confirmed Bookings)</div>
+      <div class="amount">₹<span th:text="${totalRevenue}"></span></div>
+    </div>
+    <div class="icon">💹</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat"><div class="icon">🎟</div><div class="val" th:text="${totalBookings}"></div><div class="lbl">Total Bookings</div></div>
+    <div class="stat green"><div class="icon">✅</div><div class="val" th:text="${confirmedCount}"></div><div class="lbl">Confirmed</div></div>
+    <div class="stat orange"><div class="icon">⏳</div><div class="val" th:text="${pendingCount}"></div><div class="lbl">Pending</div></div>
+    <div class="stat red"><div class="icon">❌</div><div class="val" th:text="${cancelledCount}"></div><div class="lbl">Cancelled</div></div>
+    <div class="stat purple"><div class="icon">🗺</div><div class="val" th:text="${totalRoutes}"></div><div class="lbl">Routes</div></div>
+    <div class="stat"><div class="icon">🕐</div><div class="val" th:text="${totalSchedules}"></div><div class="lbl">Schedules</div></div>
+    <div class="stat"><div class="icon">👥</div><div class="val" th:text="${totalUsers}"></div><div class="lbl">Users</div></div>
+  </div>
+
+  <!-- All bookings table -->
+  <div class="card">
+    <div class="card-header">
+      <h2>🎟 All Bookings</h2>
+      <a th:href="@{/bookings/all}">View Full Table</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>PNR</th><th>Customer</th><th>Route</th><th>Departure</th>
+          <th>Seats</th><th>Amount</th><th>Status</th><th>Payment</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+          <tr th:each="b : ${allBookings}">
+            <td><strong th:text="${b.pnr}"></strong></td>
+            <td th:text="${b.user.fullName}"></td>
+            <td th:text="${b.schedule.route.source + ' → ' + b.schedule.route.destination}"></td>
+            <td th:text="${#temporals.format(b.schedule.departureTime,'dd-MM-yyyy HH:mm')}"></td>
+            <td th:text="${b.seatsBooked}"></td>
+            <td>₹<span th:text="${b.totalAmount}"></span></td>
+            <td><span th:class="'badge badge-' + ${b.status.name().toLowerCase()}" th:text="${b.status.name()}"></span></td>
+            <td><span th:class="'badge badge-' + ${b.paymentStatus.name().toLowerCase()}" th:text="${b.paymentStatus.name()}"></span></td>
+            <td>
+              <a th:if="${b.status.name() == 'CONFIRMED'}"
+                 th:href="@{/admin/bookings/{id}/cancel(id=${b.id})}"
+                 class="btn-sm btn-danger"
+                 onclick="return confirm('Cancel booking ' + this.closest('tr').querySelector('strong').textContent + '?')">Cancel</a>
+              <span th:unless="${b.status.name() == 'CONFIRMED'}" style="color:#ccc;font-size:12px">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body></html>
